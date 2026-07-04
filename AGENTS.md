@@ -4,9 +4,10 @@
 
 以后在本目录内处理论文 PDF 或文献阅读稿时，遵守这些约定：
 
-- 默认任务路由采用渐进式披露，先按用户动词判断所需上下文，不要每次重读所有模板和脚本：`入库` 只处理元数据、重复检测、文献笔记、PDF 链接和地图维护；`抽图` 只处理本地图片目录与 `index.md`；`精读` 才读取论文全文、图表、公式并生成完整精读稿；`入库并精读` 才串联两段流程。
+- 默认任务路由采用渐进式披露，先按用户动词判断所需上下文，不要每次重读所有模板和脚本：`入库` 只处理元数据、重复检测、文献笔记、PDF 链接和地图维护；`抽图` 只处理本地图片目录与 `index.md`；`精读` 才读取论文全文、图表、公式并生成完整精读稿；`入库并精读` 才串联两段流程；用户说`解析`、`放入库中进行解析`、`抓下来解析`时，默认等同于`入库并精读`，必须生成并回填精读稿。
 - 用户只说“入库”时，不生成精读稿，不做 AI 逐图视觉分析；为提速优先使用 `setting/scripts/ingest_paper_pdf.py --defer-images` 保留图片索引占位，只有用户明确要求抽图、精读，或精读正文需要图表时，再运行 `setting/scripts/extract_paper_images.py`。
 - 用户说“精读”时，不压缩论文阅读深度：必须读取足够完整的 PDF 正文、章节结构、公式、表格和图题；若图片索引不存在或只是延后占位，先补跑图片抽取，再把精选图片嵌入对应讲解段落。
+- 生成精读稿的脚本入口是 `python setting/scripts/generate_reading_draft.py --all` 或 `python setting/scripts/generate_reading_draft.py papers/@citekey.md`；生成后必须运行 `python setting/scripts/check_paper_map.py --sync-reading-markers`，确保 `reading` 字段、精读稿文件和地图 `⌛` 标记一致。
 - 元数据默认只优先使用 arXiv / OpenAlex 等结构化来源；网络不可用时可从 PDF 推断，但必须降低 `metadata_confidence` 并说明来源。只有目标路径缺失、重复文献处理、地图分类轴不明确、或会覆盖已有非空字段时，才向用户追问。
 - 不联动 Zotero，不生成 Zotero URI，不依赖 Citations 插件。
 - 每篇文献可以有一个本地 PDF、一个精读稿 Markdown 和一个本地图片目录；文献笔记通过 `pdf`、`reading`、`images`、`image_index` 字段链接它们。`reading` 是唯一状态源：填写有效双链且文件存在后，才算“已有精读稿”。
