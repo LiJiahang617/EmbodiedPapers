@@ -1,0 +1,25 @@
+{
+  "palette": {
+    "seed": 0,
+    "selected": "adaptive-soft",
+    "custom": "e12729-f37324-f8cc1b-72b043-007f4e"
+  },
+  "mixColors": true,
+  "transition": true,
+  "accessibility": {
+    "highTextContrast": false
+  },
+  "knownTags": {
+    "paper": 1,
+    "paper-map": 2,
+    "paper-images": 3,
+    "deep-reading": 4,
+    "researcher": 5,
+    "institution": 6,
+    "review": 7,
+    "dataset": 8,
+    "benchmark": 9
+  },
+  "tagColors": {},
+  "_version": 4
+}

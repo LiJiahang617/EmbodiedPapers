@@ -1,0 +1,59 @@
+# Local runtime/state
+.omx/
+tmp/
+.trash/
+local-archive/
+terminals/
+.claude/
+.agents/
+.claudian/
+agent-tools/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Nested independent repos (own .git; not tracked by this repo)
+Embodied-AI-Daily/
+robotics_arXiv_daily/
+ITact/
+
+# Tool/cache output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.tmp
+*.bak
+*.swp
+*.log
+
+# Obsidian local UI/runtime state
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/plugins/*/main.js
+.obsidian/plugins/*/styles.css
+.obsidian/plugins/*/*.map
+.obsidian/plugins/obsidian-git/obsidian_askpass.sh
+.obsidian/themes/*/theme.css
+
+# ==================== 论文库本地化策略（仅保留配置同步） ======================
+# 只保留仓库级配置（AGENTS.md、论文地图、setting 配置）;
+# 具体论文内容与下载产物全部本地化，不再同步。
+papers/*
+!papers/.gitkeep
+!papers/pdfs/
+papers/pdfs/*
+!papers/pdfs/.gitkeep
+!papers/images/
+papers/images/*
+!papers/images/.gitkeep
+!papers/readings/
+papers/readings/*
+!papers/readings/.gitkeep
+
+institutions/*
+!institutions/.gitkeep
+
+researchers/*
+!researchers/.gitkeep
