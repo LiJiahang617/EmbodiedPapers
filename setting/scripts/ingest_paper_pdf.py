@@ -109,7 +109,9 @@ def main() -> int:
     parser.add_argument("--year", default="", help="Manual year override.")
     parser.add_argument("--doi", default="", help="Manual DOI override.")
     parser.add_argument("--arxiv", default="", help="Manual arXiv id override.")
+    parser.add_argument("--url", default="", help="Manual source URL override.")
     parser.add_argument("--venue", default="", help="Manual venue override.")
+    parser.add_argument("--abstract", default="", help="Manual abstract override.")
     parser.add_argument("--metadata-source", default="", help="Manual metadata_source override.")
     parser.add_argument("--metadata-confidence", choices=["high", "medium", "low"], default="", help="Manual confidence.")
     parser.add_argument("--rename-pdf", action="store_true", help="Use citekey as the target PDF filename.")
@@ -495,8 +497,12 @@ def apply_overrides(metadata: Metadata, args: argparse.Namespace) -> None:
         metadata.doi = args.doi
     if args.arxiv:
         metadata.arxiv = args.arxiv
+    if args.url:
+        metadata.url = args.url
     if args.venue:
         metadata.venue = args.venue
+    if args.abstract:
+        metadata.abstract = args.abstract
 
 
 def infer_source(metadata: Metadata) -> str:
