@@ -51,6 +51,9 @@ papers/images/*
 !papers/readings/
 papers/readings/*
 !papers/readings/.gitkeep
+!papers/bilingual/
+papers/bilingual/*
+!papers/bilingual/.gitkeep
 
 institutions/*
 !institutions/.gitkeep
