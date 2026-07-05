@@ -28,7 +28,7 @@
 Git 同步策略：
 
 - 默认只提交仓库级配置、模板、脚本、校验逻辑和空目录占位。
-- `papers/`、`institutions/`、`researchers/` 中的实际论文笔记、PDF、图片、精读稿、研究者页和机构页全部保持本地化，不进入 Git。
+- 同步策略只区分「体积」：小体积文本笔记进 Git——文献笔记 `papers/@*.md`、中英混读精读稿 `papers/bilingual/*.md`、`论文地图.md`、`setting/` 配置、`AGENTS.md`；大文件保持本地化不入库——PDF `papers/pdfs/`、图片 `papers/images/`。笔记里指向 PDF/图片的链接在远端仅作占位。规则由 `.gitignore` 落地，并用 `python setting/scripts/check_git_sync_policy.py` 校验（同时扫描 GitHub token 等密钥，防误提交）。
 - `.obsidian/workspace*.json` 属于个人窗口布局和最近文件状态，不提交。
 - `.obsidian/plugins/*/main.js`、`styles.css` 和主题 CSS 属于可重新安装的插件/主题载荷，不提交；Git 只保留插件启用列表、manifest 和 data 配置。
 - 若确实需要同步少量精选笔记，先显式调整 `.gitignore`，不要直接用 `git add -f papers/...` 绕过策略。

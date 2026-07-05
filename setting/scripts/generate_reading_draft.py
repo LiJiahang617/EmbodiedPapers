@@ -138,6 +138,11 @@ def main() -> int:
     parser.add_argument("notes", nargs="*", help="paper note paths or citekeys")
     parser.add_argument("--all", action="store_true", help="generate drafts for all papers/@*.md notes")
     parser.add_argument("--overwrite", action="store_true", help="overwrite existing bilingual drafts")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="also overwrite hand-written drafts (frontmatter reading_mode); use with care",
+    )
     parser.add_argument("--max-sections", type=int, default=18, help="maximum sections to expand")
     parser.add_argument(
         "--output-dir",
@@ -167,9 +172,17 @@ def main() -> int:
         output_dir = root / args.output_dir
         reading_path = output_dir / f"{note.citekey.lstrip('@')}_中英混读.md"
 
-        if reading_path.exists() and not args.overwrite:
-            print(f"Skip existing bilingual draft: {reading_path.relative_to(root)}")
-            continue
+        if reading_path.exists():
+            existing_fm = parse_frontmatter(reading_path.read_text(encoding="utf-8"))
+            if "reading_mode" in existing_fm and not args.force:
+                print(
+                    "Skip hand-written draft (pass --force to overwrite): "
+                    f"{reading_path.relative_to(root)}"
+                )
+                continue
+            if not args.overwrite and not args.force:
+                print(f"Skip existing bilingual draft: {reading_path.relative_to(root)}")
+                continue
 
         reading_text = build_bilingual_draft(
             note=note,

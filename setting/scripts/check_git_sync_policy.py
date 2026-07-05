@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Verify that Git-tracked content stays lightweight and paper-free."""
+"""Verify that Git-tracked content stays lightweight.
+
+Sync policy: small text notes (paper notes ``papers/@*.md`` and bilingual
+reading drafts ``papers/bilingual/*.md``) may be tracked, but heavy artifacts
+(PDFs under ``papers/pdfs/`` and images under ``papers/images/``) must stay
+local so the repository does not balloon as papers are added.
+"""
 
 from __future__ import annotations
 
@@ -14,6 +20,12 @@ from pathlib import Path
 DEFAULT_MAX_BYTES = 1_000_000
 PLACEHOLDER = ".gitkeep"
 LOCAL_LIBRARY_PREFIXES = ("papers/", "institutions/", "researchers/")
+# Heavy artifacts that must never be tracked (kept local to avoid repo bloat).
+BLOCKED_LIBRARY_DIRS = ("papers/pdfs/", "papers/images/")
+BLOCKED_EXTENSIONS = {
+    ".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg",
+    ".mp4", ".mov", ".zip", ".tar", ".gz",
+}
 SECRET_PATTERNS = {
     "GitHub classic token": re.compile(r"ghp_[A-Za-z0-9_]{36,}"),
     "GitHub fine-grained token": re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),
@@ -77,7 +89,9 @@ def check_local_library_paths(paths: list[str]) -> list[str]:
             continue
         if Path(path).name == PLACEHOLDER:
             continue
-        errors.append(f"local library content is tracked: {path}")
+        # Text notes are allowed; only heavy PDF/image artifacts must stay local.
+        if path.startswith(BLOCKED_LIBRARY_DIRS) or Path(path).suffix.lower() in BLOCKED_EXTENSIONS:
+            errors.append(f"heavy library artifact must stay local (not tracked): {path}")
     return errors
 
 
