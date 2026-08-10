@@ -30,6 +30,7 @@ Git 同步策略：
 - 默认只提交仓库级配置、模板、脚本、校验逻辑和空目录占位。
 - 同步策略只区分「体积」：小体积文本笔记进 Git——文献笔记 `papers/@*.md`、中英混读精读稿 `papers/bilingual/*.md`、`论文地图.md`、`setting/` 配置、`AGENTS.md`；大文件保持本地化不入库——PDF `papers/pdfs/`、图片 `papers/images/`。笔记里指向 PDF/图片的链接在远端仅作占位。规则由 `.gitignore` 落地，并用 `python setting/scripts/check_git_sync_policy.py` 校验（同时扫描 GitHub token 等密钥，防误提交）。
 - 图片不入库意味着全新 clone / 换机器后本地会缺图，精读稿里的图片嵌入会显示为坏链。用 `python setting/scripts/rehydrate_images.py` 按各笔记 `arxiv` 字段从 arXiv source 确定性重抽补齐；抽取沿用 source 原始文件名，能精确复现精读稿引用的图名。`--check` 只报告缺图并以非零码退出（可作换机 / 提交前校验），`--force` / `--clean` 强制重建，无 `arxiv` 字段的论文需手动拷贝图片。
+- 同理，PDF（`papers/pdfs/`）不入库意味着换机器 / 全新 clone 后本地会缺原文，笔记 `pdf::` 链接指向空文件。用 `python setting/scripts/rehydrate_pdfs.py` 按各笔记 `arxiv`（优先）或 `url`（支持 GitHub `/blob/`→raw、arXiv `/abs/`→`/pdf/`、直链 `.pdf`）确定性重下到 `pdf::` 期望的文件名；`--check` 只报缺失并以非零码退出（可作换机 / 提交前校验），`--force` 强制重下，无 `arxiv`/`url` 来源的论文需手动拷贝。
 - `.obsidian/workspace*.json` 属于个人窗口布局和最近文件状态，不提交。
 - `.obsidian/plugins/*/main.js`、`styles.css` 和主题 CSS 属于可重新安装的插件/主题载荷，不提交；Git 只保留插件启用列表、manifest 和 data 配置。
 - 若确实需要同步少量精选笔记，先显式调整 `.gitignore`，不要直接用 `git add -f papers/...` 绕过策略。

@@ -15,7 +15,7 @@ pdf:: [[papers/pdfs/liu2026last0-latent-spatio-temporal.pdf]]
 images:: [[papers/images/liu2026last0-latent-spatio-temporal/index.md]]
 
 > 单位：Peking University（Zhuoyang Liu, **Jiaming Liu** 共同一作；Shanghang Zhang 通讯）· CUHK · 北京人形机器人创新中心｜ ICML 2026 ｜ arXiv:2601.05248v4（2026-06）｜ 主页：https://vla-last0.github.io
-> 备注：用户所说 "LAST-HD" 即本篇 **LaST₀**（下标 0）。
+> 备注：**LaST₀** 与后续 [[@liu2026last-hd|LaST-HD]] 是两篇独立论文；前者提出潜时空 CoT 与 MoT 快慢系统，后者在此接口上研究人手数据的 latent physical alignment。
 
 ## 核心词汇速查
 

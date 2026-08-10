@@ -41,9 +41,11 @@ except ImportError:  # pragma: no cover - urllib fallback is for minimal Python 
 LOGGER = logging.getLogger("extract_paper_images")
 
 FIGURE_DIR_NAMES = {"pics", "figures", "figure", "fig", "images", "image", "img"}
+FIGURE_DIR_RE = re.compile(r"^(?:pics?|fig(?:ure)?s?|images?|imgs?)(?:[_-].*)?$", re.I)
 SOURCE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".pdf", ".eps"}
 EMBED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".pdf"}
 SKIP_NAME_RE = re.compile(r"(logo|icon|favicon|thumb|thumbnail|author|orcid)", re.I)
+SKIP_DIR_RE = re.compile(r"^(?:icons?|logos?|affiliations?(?:[_-].*)?)$", re.I)
 ARXIV_RE = re.compile(r"(?P<id>\d{4}\.\d{4,5})(?:v\d+)?", re.I)
 
 
@@ -201,7 +203,8 @@ def extract_from_source(source_dir: Path, output_dir: Path) -> list[ImageRecord]
 def find_source_figure_files(source_dir: Path) -> list[Path]:
     figure_dirs = [
         path for path in source_dir.rglob("*")
-        if path.is_dir() and path.name.lower() in FIGURE_DIR_NAMES
+        if path.is_dir()
+        and (path.name.lower() in FIGURE_DIR_NAMES or FIGURE_DIR_RE.fullmatch(path.name))
     ]
 
     files: list[Path] = []
@@ -210,6 +213,8 @@ def find_source_figure_files(source_dir: Path) -> list[Path]:
     for root in search_roots:
         for path in root.rglob("*"):
             if not path.is_file() or path in seen:
+                continue
+            if any(SKIP_DIR_RE.fullmatch(part) for part in path.parts):
                 continue
             if path.suffix.lower() not in SOURCE_EXTENSIONS:
                 continue

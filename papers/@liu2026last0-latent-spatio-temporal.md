@@ -44,7 +44,7 @@ topics:
 - [x] 地图维护:: 已加入 [[论文地图]] 快速索引，`#map/具身智能/VLA/潜空间时空思维链CoT`
 - [x] 阅读状态:: read
 
-related::
+related:: [[@liu2026last-hd]]
 affiliation::
 
 ## Abstract
@@ -53,7 +53,7 @@ Vision-Language-Action (VLA) models have recently shown strong generalization, w
 
 ## 一句话定位
 
-把 VLA 的"先思后行"从缓慢、困在语言的显式 CoT，换成紧凑潜空间自回归预测未来 2D 视觉/3D 几何/本体状态、跨时间一致的 Latent Spatio-Temporal CoT，再用 MoT 双系统让慢推理与快动作异步协作。（用户所说 LAST-HD 即本篇 LaST₀）
+把 VLA 的"先思后行"从缓慢、困在语言的显式 CoT，换成紧凑潜空间自回归预测未来 2D 视觉/3D 几何/本体状态、跨时间一致的 Latent Spatio-Temporal CoT，再用 MoT 双系统让慢推理与快动作异步协作。请勿与后续独立论文 [[@liu2026last-hd|LaST-HD]] 混淆。
 
 ## 方法 / 对象
 
