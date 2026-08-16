@@ -209,9 +209,9 @@ def find_source_figure_files(source_dir: Path) -> list[Path]:
 
     files: list[Path] = []
     seen: set[Path] = set()
-    search_roots = figure_dirs if figure_dirs else [source_dir]
-    for root in search_roots:
-        for path in root.rglob("*"):
+
+    def collect(paths: Iterable[Path]) -> None:
+        for path in paths:
             if not path.is_file() or path in seen:
                 continue
             if any(SKIP_DIR_RE.fullmatch(part) for part in path.parts):
@@ -222,6 +222,16 @@ def find_source_figure_files(source_dir: Path) -> list[Path]:
                 continue
             seen.add(path)
             files.append(path)
+
+    if figure_dirs:
+        for root in figure_dirs:
+            collect(root.rglob("*"))
+        # Some submissions keep a Figures/ directory but still leave main figures
+        # (teaser, method overview) at the source root. Scan that top level too,
+        # otherwise those figures are silently dropped here and in rehydrate.
+        collect(source_dir.iterdir())
+    else:
+        collect(source_dir.rglob("*"))
 
     return sorted(files, key=lambda item: natural_key(item.name))
 
