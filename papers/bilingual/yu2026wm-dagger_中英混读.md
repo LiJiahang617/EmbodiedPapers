@@ -375,7 +375,7 @@ Towel folding 的成功率没有像 pushing 那么高，这是很有信息量的
 
 这篇最值得借鉴的是“合成数据不是越多越好，而是方向要对、物理要可信”。很多机器人数据增强论文只强调生成更多状态，但 WM-DAgger 的消融说明，错误 recovery supervision 会直接让策略崩掉。w/o Dir. = 0.0 是一个很强的警告：在 imitation learning 里，合成数据的动作标签比视觉逼真更重要。
 
-把它放进 VLA / WMA 方向看，它提供了一个很具体的世界模型用法：不是让 world model 直接控制，也不是做长时程规划，而是离线填补 BC 最缺的 OOD recovery distribution。这个用法工程上更稳，因为最终部署时仍是 policy model 执行动作，world model 只在训练数据层面发挥作用。
+把它放进 VLA / WAM 方向看，它提供了一个很具体的世界模型用法：不是让 world model 直接控制，也不是做长时程规划，而是离线填补 BC 最缺的 OOD recovery distribution。这个用法工程上更稳，因为最终部署时仍是 policy model 执行动作，world model 只在训练数据层面发挥作用。
 
 我会把这篇作为“世界模型辅助数据聚合”的入口来回看。后续如果读到更强的视频世界模型、触觉世界模型或 VLA 自训练论文，可以拿它的三个问题去对照：生成的 OOD 状态从哪里来，动作监督如何保证不误导，过滤机制如何证明物理一致。
 

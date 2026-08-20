@@ -305,7 +305,7 @@ RoboCasa365 的 API 包括 robot state、gripper、RGB-D camera、cuRobo/Pyroki 
 
 ENPIRE 很像机器人学习版的“自动实验操作系统”。它真正抓住的是机器人研究中的隐性工程成本：不是每个算法 idea 难，而是每个 idea 都要在真实世界里安全、可重复、可验证地试。把 reset、reward、rollout、log、branch、merge 这些东西统一成 harness 后，coding agent 才有机会真正参与机器人研究。
 
-这篇对以后看 VLA / WMA 自改进特别重要。很多论文说模型能从 interaction 中变好，但谁来操作 interaction？谁来复位？谁来定义成功？谁来决定下一个训练 recipe？ENPIRE 给出的是系统层答案。
+这篇对以后看 VLA / WAM 自改进特别重要。很多论文说模型能从 interaction 中变好，但谁来操作 interaction？谁来复位？谁来定义成功？谁来决定下一个训练 recipe？ENPIRE 给出的是系统层答案。
 
 我会把它放在“真实机器人自动研究 / policy self-improvement infrastructure”位置来回看。它不是单个 policy 的 SOTA 论文，而是把机器人实验吞吐、agent token 成本、机器人利用率和自动 reward 设计变成了可研究、可比较的对象。
 

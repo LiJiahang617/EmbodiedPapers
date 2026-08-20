@@ -20,7 +20,7 @@ pdf: "[[papers/pdfs/WM-DAgger.pdf]]"
 reading: "[[papers/bilingual/yu2026wm-dagger_中英混读.md]]"
 images: "papers/images/yu2026wm-dagger/"
 image_index: "[[papers/images/yu2026wm-dagger/index.md]]"
-map_axis: "世界模型/WMA/数据聚合与策略修复"
+map_axis: "世界模型/WAM/数据聚合与策略修复"
 map_brief: "用 eye-in-hand action-conditioned world model 合成 OOD recovery trajectories，再用方向约束和 DINOv2 终帧一致性过滤减少误监督。"
 map_role: "研究世界模型如何为 imitation learning 自动补 recovery data 的入口。"
 authors:

@@ -21,7 +21,7 @@ pdf: "[[papers/pdfs/WAM-RL.pdf]]"
 reading: "[[papers/bilingual/qian2026wam-rl_中英混读.md]]"
 images: "papers/images/qian2026wam-rl/"
 image_index: "[[papers/images/qian2026wam-rl/index.md]]"
-map_axis: "世界模型/WMA/在线强化学习与世界模型后训练"
+map_axis: "世界模型/WAM/在线强化学习与世界模型后训练"
 map_brief: "在 World-Action Model 中同时优化 world model 和 actor：成功轨迹做 online video SFT + KL 稳定 latent space，actor 用 reconstruction-based dense reward 做 RL。"
 map_role: "研究 WA/WAM 如何从专家轨迹监督扩展到在线交互强化学习的入口。"
 authors:
