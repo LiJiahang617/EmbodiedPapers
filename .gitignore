@@ -4,7 +4,9 @@ tmp/
 .trash/
 local-archive/
 terminals/
-.claude/
+# .claude/ 默认是本地会话状态，不同步；只放行随库携带的 agent 规则与 skill
+.claude/*
+!.claude/skills/
 .agents/
 .claudian/
 agent-tools/
