@@ -1,6 +1,9 @@
 ---
 tags:
   - paper
+  - cat/wam
+  - cat/human-data
+  - cat/test-time
 status: unread
 aliases:
   - WAM-TTT

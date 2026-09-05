@@ -1,6 +1,10 @@
 ---
 tags:
   - paper
+  - cat/wam
+  - cat/human-data
+  - cat/foundation-model
+  - cat/cross-embodiment
 status: unread
 aliases:
   - DYNA-2

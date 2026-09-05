@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/perception
 status: unread
 aliases:
   - "Vision Pretraining for Dense Spatial Perception"

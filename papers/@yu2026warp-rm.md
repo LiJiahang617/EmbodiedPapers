@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/data
+  - cat/value-reward
 status: unread
 aliases:
   - "WARP-RM: A Warp-Augmented Relative Progress Reward Model for Data Curation"

@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/tactile
 status: unread
 aliases:
   - "Multisensory Continual Learning: Adapting Pretrained Visuomotor Policies to Force"

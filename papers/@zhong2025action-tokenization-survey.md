@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/action-repr
 status: unread
 aliases:
   - "A Survey on Vision-Language-Action Models: An Action Tokenization Perspective"

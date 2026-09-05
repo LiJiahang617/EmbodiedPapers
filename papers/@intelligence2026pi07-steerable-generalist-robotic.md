@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/foundation-model
 status: read
 aliases:
   - "${\\pi}_{0.7}$: a Steerable Generalist Robotic Foundation Model with Emergent Capabilities"

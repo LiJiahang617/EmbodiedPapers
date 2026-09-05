@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/test-time
 status: read
 aliases:
   - "VLA-Corrector: Lightweight Detect-and-Correct Inference for Adaptive Action Horizon"

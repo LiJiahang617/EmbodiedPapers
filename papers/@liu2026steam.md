@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/data
+  - cat/value-reward
 status: unread
 aliases:
   - "STEAM: Self-Supervised Temporal Ensemble Advantage Modeling for Real-World Robot Learning"

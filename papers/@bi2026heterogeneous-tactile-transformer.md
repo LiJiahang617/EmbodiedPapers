@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/tactile
 status: read
 aliases:
   - "Heterogeneous Tactile Transformer"

@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/action-repr
 status: unread
 aliases:
   - "X-Tokenizer: A Multimodal Action Tokenizer for Vision-Language-Action Pretraining"

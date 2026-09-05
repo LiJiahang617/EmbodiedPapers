@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/world-model
 status: unread
 aliases:
   - "Fast LeWorldModel"

@@ -1,6 +1,9 @@
 ---
 tags:
   - paper
+  - cat/agent
+  - cat/memory
+  - cat/perception
 status: unread
 aliases:
   - "HoloAgent-0: A Unified Embodied Agent Framework with 3D Spatial Memory"

@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/humanoid
+  - cat/cross-embodiment
 status: unread
 aliases:
   - "Transformer Transformer: A Unified Model for Motion-Conditioned Robot Co-design"

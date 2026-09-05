@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/world-model
+  - cat/foundation-model
 status: unread
 aliases:
   - "Qwen-RobotWorld Technical Report: Unifying Embodied World Modeling through Language-Conditioned Video Generation"

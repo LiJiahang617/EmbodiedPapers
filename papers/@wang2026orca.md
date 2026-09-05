@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/world-model
+  - cat/foundation-model
 status: unread
 aliases:
   - "Orca: The World is in Your Mind"

@@ -1,6 +1,9 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/memory
+  - cat/foundation-model
 status: unread
 aliases:
   - "DM0.5: An Open-World Foundation Model for General-Purpose Embodied Intelligence"

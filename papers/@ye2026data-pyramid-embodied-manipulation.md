@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/data
 status: unread
 aliases:
   - "Data Pyramid for Embodied Manipulation"

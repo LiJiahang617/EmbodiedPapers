@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/tactile
 status: read
 aliases:
   - "TactX: Learning Shared Tactile Representations Across Diverse Sensors"

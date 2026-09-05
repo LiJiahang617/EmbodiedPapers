@@ -1,6 +1,9 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/test-time
+  - cat/memory
 status: unread
 aliases:
   - "RoboTTT: Context Scaling for Robot Policies"

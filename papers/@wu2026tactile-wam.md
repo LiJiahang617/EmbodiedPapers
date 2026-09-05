@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/tactile
+  - cat/wam
 status: unread
 aliases:
   - "Tactile-WAM: Touch-Aware World Action Model with Tactile Asymmetric Attention"

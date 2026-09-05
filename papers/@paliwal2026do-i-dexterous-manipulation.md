@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/human-data
 status: read
 aliases:
   - "Do as I Do: Dexterous Manipulation Data from Everyday Human Videos"

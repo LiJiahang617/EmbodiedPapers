@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/world-model
+  - cat/foundation-model
 status: unread
 aliases:
   - "GigaWorld-1: A Roadmap to World Models for Robot Policy Evaluation"

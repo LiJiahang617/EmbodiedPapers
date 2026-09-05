@@ -1,6 +1,9 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/memory
+  - cat/perception
 status: unread
 aliases:
   - AtlasVLA

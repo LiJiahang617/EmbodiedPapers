@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/rl
+  - cat/humanoid
 status: unread
 aliases:
   - "ROVE: Unlocking Human Interventions for Humanoid Manipulation via Reinforcement Learning"

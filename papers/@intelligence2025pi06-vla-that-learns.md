@@ -1,6 +1,10 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/rl
+  - cat/self-evolving
+  - cat/foundation-model
 status: read
 aliases:
   - "$\\pi^{*}_{0.6}$: a VLA That Learns From Experience"

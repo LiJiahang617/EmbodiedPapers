@@ -1,6 +1,9 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/human-data
+  - cat/cross-embodiment
 status: unread
 aliases:
   - Ego-Pi

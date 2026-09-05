@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/rl
 status: read
 aliases:
   - "Precise and Dexterous Robotic Manipulation via"

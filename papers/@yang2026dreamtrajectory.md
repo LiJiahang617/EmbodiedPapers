@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/world-model
 status: unread
 aliases:
   - DreamTrajectory

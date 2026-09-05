@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/humanoid
+  - cat/data
 status: read
 aliases:
   - "VLK: Learning Humanoid Loco-Manipulation from Synthetic Interactions in Reconstructed Scenes"

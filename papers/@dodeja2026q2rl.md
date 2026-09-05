@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/rl
+  - cat/value-reward
 status: unread
 aliases:
   - Q2RL

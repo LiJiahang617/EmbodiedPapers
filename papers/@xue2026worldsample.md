@@ -1,6 +1,9 @@
 ---
 tags:
   - paper
+  - cat/wam
+  - cat/rl
+  - cat/self-evolving
 status: unread
 aliases:
   - WorldSample

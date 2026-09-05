@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/self-evolving
 status: unread
 aliases:
   - ENPIRE

@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/tactile
 status: unread
 aliases:
   - "You Only Touch Once: 6-DoF Object Pose Estimation from Single Tactile Contact"

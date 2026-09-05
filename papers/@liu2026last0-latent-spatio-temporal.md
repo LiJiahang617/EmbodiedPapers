@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/vla
 status: read
 aliases:
   - "LaST_0: Latent Spatio-Temporal Chain-of-Thought for Robotic Vision-Language-Action Model"

@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/wam
 status: unread
 aliases:
   - FACT

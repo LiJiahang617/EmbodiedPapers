@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/tactile
+  - cat/wam
 status: unread
 aliases:
   - "TACO: TActile World Model as a Self-COrrector for Scalable VLA Post-Training"

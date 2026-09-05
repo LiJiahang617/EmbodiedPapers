@@ -1,6 +1,7 @@
 ---
 tags:
   - paper
+  - cat/value-reward
 status: unread
 aliases:
   - RynnValue

@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/world-model
+  - cat/value-reward
 status: unread
 aliases:
   - "World Value Models for Robotic Manipulation"

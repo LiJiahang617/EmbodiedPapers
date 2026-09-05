@@ -1,6 +1,8 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/human-data
 status: unread
 aliases:
   - LaST-HD

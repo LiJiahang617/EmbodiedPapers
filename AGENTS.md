@@ -23,6 +23,7 @@
 - 公式要尽量保留并解释变量含义、直观含义和使用位置；表格要尽量转成 Markdown 或保留关键行列、指标和数值结论；图题和图号要保留，正文要解释重要图在证明什么。
 - 精读稿不要在顶部堆叠图片索引或批量预览图；完整图片清单放在独立 `papers/images/<pdf-stem>/index.md`，正文只把精选图片嵌入到对应的设计、方法、实验或应用讲解段落中。
 - 增加、删除或重命名 `papers/@*.md` 文献笔记时，必须同步维护根目录 `论文地图.md` 的 `## 快速索引`；地图只保留 `#map/... :: [[@citekey|短名]] · ...` 分类线索行，不维护「书架」或 `问题 -> 方法钩子 -> 回看理由` 长条目（这些内容写在各文献笔记里）。尚未链接精读稿的文献，在快速索引短名前保留 `⌛` 标记；可用 `python setting/scripts/check_paper_map.py --sync-reading-markers` 按 `reading` 字段自动同步。完成或新增精读稿后，更新文献笔记 `reading` 与 checklist，并运行 `python setting/scripts/check_paper_map.py`，确认地图覆盖、精读稿标记与 `reading` 字段一致。`## 精读稿状态` 由 Dataview 自动汇总，不需手写清单。
+- 每篇文献笔记的 frontmatter `tags` 除 `paper` 外还要挂 1 到 4 个 `cat/...` 分类标签，充当 Zotero 式集合，一篇文献可同时属于多个分类；词表、含义与浏览入口见 `分类/分类总览.md`，各分类页由 Dataview 按标签自动列成员，不需手工维护清单。入库时选好分类；实在放不进任何一类再新开，新开时在 `分类/` 下建带 `cat` 与 `desc` 字段的页面，总览表会自动收录。
 - 不替用户强行设计正文文件夹结构；脚本和模板应保持可配置、可移动。
 - 功能入口：`.obsidian/` 是 Obsidian 配置，`setting/js/research.js` 是 Dataview/CustomJS 汇总逻辑，`setting/templates/template-folder/` 是 Templater 模板，`setting/templater-scripts/` 是 OpenAlex/ROR 生成脚本，`setting/scripts/` 是本地批处理脚本。
 

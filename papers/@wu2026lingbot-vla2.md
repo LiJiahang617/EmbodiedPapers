@@ -1,6 +1,9 @@
 ---
 tags:
   - paper
+  - cat/vla
+  - cat/foundation-model
+  - cat/cross-embodiment
 status: unread
 aliases:
   - "From Foundation to Application: Improving VLA Models in Practice"
