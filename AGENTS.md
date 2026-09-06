@@ -32,16 +32,17 @@ Git 同步策略：
 
 - 默认只提交仓库级配置、模板、脚本、校验逻辑和空目录占位。
 - 同步策略只区分「体积」：小体积文本笔记进 Git——文献笔记 `papers/@*.md`、中英混读精读稿 `papers/bilingual/*.md`、`论文地图.md`、`setting/` 配置、`AGENTS.md`；大文件保持本地化不入库——PDF `papers/pdfs/`、图片 `papers/images/`。笔记里指向 PDF/图片的链接在远端仅作占位。规则由 `.gitignore` 落地，并用 `python setting/scripts/check_git_sync_policy.py` 校验（同时扫描 GitHub token 等密钥，防误提交）。
-- 图片不入库意味着全新 clone / 换机器后本地会缺图，精读稿里的图片嵌入会显示为坏链。用 `python setting/scripts/rehydrate_images.py` 按各笔记 `arxiv` 字段从 arXiv source 确定性重抽补齐；抽取沿用 source 原始文件名，能精确复现精读稿引用的图名。`--check` 只报告缺图并以非零码退出（可作换机 / 提交前校验），`--force` / `--clean` 强制重建，无 `arxiv` 字段的论文需手动拷贝图片。
+- 图片不入库意味着全新 clone / 换机器后本地会缺图，精读稿里的图片嵌入会显示为坏链。用 `python setting/scripts/rehydrate_images.py` 按各笔记 `arxiv` 字段从 arXiv source 确定性重抽补齐；抽取沿用 source 原始文件名，能精确复现精读稿引用的图名。`--check` 只报告缺图并以非零码退出（可作换机 / 提交前校验），`--force` / `--clean` 强制重建，无 `arxiv` 字段的论文需手动拷贝图片。rehydrate 一律带 `--require-arxiv-source` 调用抽图脚本：arXiv source 取不到时必须报错退出，不能回落到 PDF 内嵌抽图，因为回落会写出 `pageN_figM` 这类文件名，永远对不上精读稿已经引用的图名，等于把可修复的缺图变成永久坏链。arXiv 会限流，抽图脚本对 403/429/5xx 做指数退避重试，rehydrate 在论文之间默认间隔 3 秒（`--delay`）。
 - 同理，PDF（`papers/pdfs/`）不入库意味着换机器 / 全新 clone 后本地会缺原文，笔记 `pdf::` 链接指向空文件。用 `python setting/scripts/rehydrate_pdfs.py` 按各笔记 `arxiv`（优先）或 `url`（支持 GitHub `/blob/`→raw、arXiv `/abs/`→`/pdf/`、直链 `.pdf`）确定性重下到 `pdf::` 期望的文件名；`--check` 只报缺失并以非零码退出（可作换机 / 提交前校验），`--force` 强制重下，无 `arxiv`/`url` 来源的论文需手动拷贝。
 - `.obsidian/workspace*.json` 属于个人窗口布局和最近文件状态，不提交。
 - `.obsidian/plugins/*/main.js`、`styles.css` 和主题 CSS 属于可重新安装的插件/主题载荷，不提交；Git 只保留插件启用列表、manifest 和 data 配置。
 - 若确实需要同步少量精选笔记，先显式调整 `.gitignore`，不要直接用 `git add -f papers/...` 绕过策略。
 - 提交前可运行 `python setting/scripts/check_git_sync_policy.py`，检查是否误追踪论文内容、大文件或 GitHub token 形态的密钥。
+- `setting/scripts/sync.sh` 把 pull、两个 rehydrate 和两个校验串成一条命令，换机器或隔一阵回来跑它即可；`--check` 是不联网、不改文件的完整性核对，`--no-pull` 只补资产，`--force` 全量重取。它自己挑能 `import fitz, requests` 的解释器，不写死路径。
 
 新设备起步：
 
 - `git clone` 之后先装依赖 `pip install -r setting/scripts/requirements.txt`，再用 `python -c "import fitz, requests"` 验一遍。PyMuPDF 缺失时入库和抽图脚本会静默产不出结果，不报错。
-- 依次跑 `rehydrate_pdfs.py`、`rehydrate_images.py` 补齐本地 PDF 与图片，再跑 `check_paper_map.py` 和 `check_git_sync_policy.py` 自检。
+- 然后跑 `setting/scripts/sync.sh` 一条命令补齐本地 PDF 与图片并自检；它内部依次调 `rehydrate_pdfs.py`、`rehydrate_images.py`、`check_paper_map.py` 和 `check_git_sync_policy.py`，也可以单独跑这四个。
 - 不要把解释器绝对路径写进任何库内文件，各机器位置不同。
 - 用 Claude Code 时在仓库根目录打开，否则 `.claude/skills/` 不会被发现。

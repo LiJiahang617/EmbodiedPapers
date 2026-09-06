@@ -4,10 +4,15 @@
 Extract paper figures for this Obsidian vault.
 
 Low-cost default:
-1. Try arXiv source package first.
+1. Try arXiv source package first, retrying with backoff when arXiv throttles us.
 2. Convert source PDF figures to PNG.
 3. Fall back to embedded PDF images when source figures are scarce or the paper is not arXiv.
 4. Generate an Obsidian-ready image index with embeds.
+
+Step 3 renames the figures (pageN_figM), so it is right for a first ingest and wrong
+for rehydration, where the filenames have to match what the reading drafts already
+embed. Pass --require-arxiv-source to turn step 3 off and fail loudly instead; that
+is what rehydrate_images.py does.
 """
 
 from __future__ import annotations
@@ -22,6 +27,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -35,6 +41,7 @@ try:
     import requests
 except ImportError:  # pragma: no cover - urllib fallback is for minimal Python installs.
     requests = None
+    import urllib.error
     import urllib.request
 
 
@@ -47,6 +54,9 @@ EMBED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".pdf"}
 SKIP_NAME_RE = re.compile(r"(logo|icon|favicon|thumb|thumbnail|author|orcid)", re.I)
 SKIP_DIR_RE = re.compile(r"^(?:icons?|logos?|affiliations?(?:[_-].*)?)$", re.I)
 ARXIV_RE = re.compile(r"(?P<id>\d{4}\.\d{4,5})(?:v\d+)?", re.I)
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+# arXiv throttles bursts. 403/429 and 5xx are worth retrying; 404 is a real answer.
+RETRY_STATUSES = {403, 429, 500, 502, 503, 504}
 
 
 @dataclass
@@ -70,6 +80,9 @@ def main() -> int:
     parser.add_argument("--min-dimension", type=int, default=120, help="Minimum width/height for PDF embedded images.")
     parser.add_argument("--min-bytes", type=int, default=8 * 1024, help="Minimum byte size for PDF embedded images.")
     parser.add_argument("--skip-arxiv-source", action="store_true", help="Skip arXiv source download and use the local PDF only.")
+    parser.add_argument("--require-arxiv-source", action="store_true", help="Fail instead of falling back to embedded-PDF extraction when the arXiv source is unusable. Use this for rehydration, where filenames must match the ones reading drafts embed.")
+    parser.add_argument("--source-retries", type=int, default=4, help="Attempts for the arXiv source download (default 4).")
+    parser.add_argument("--source-retry-wait", type=float, default=5.0, help="Base seconds for exponential backoff between source attempts (default 5).")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -98,10 +111,29 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="paper-images-") as temp_name:
         temp_dir = Path(temp_name)
 
-        if arxiv_id and not args.skip_arxiv_source and download_arxiv_source(arxiv_id, temp_dir):
-            source_records = extract_from_source(temp_dir, output_dir)
-            records.extend(source_records)
-            LOGGER.info("arXiv source figures: %s", len(source_records))
+        source_status = "skipped"
+        if arxiv_id and not args.skip_arxiv_source:
+            source_status = download_arxiv_source(
+                arxiv_id,
+                temp_dir,
+                retries=args.source_retries,
+                base_wait=args.source_retry_wait,
+            )
+            if source_status == "ok":
+                source_records = extract_from_source(temp_dir, output_dir)
+                records.extend(source_records)
+                LOGGER.info("arXiv source figures: %s", len(source_records))
+
+        if args.require_arxiv_source:
+            problem = source_source_problem(args, arxiv_id, source_status, records)
+            if problem:
+                LOGGER.error(
+                    "REQUIRE-ARXIV-SOURCE: refusing to fall back to embedded-PDF extraction (%s). "
+                    "The fallback writes pageN_figM filenames, which do not match the figure names "
+                    "reading drafts embed, so it would produce broken links rather than fix them.",
+                    problem,
+                )
+                return 2
 
         if pdf_path and len(records) < args.min_source_count:
             records.extend(
@@ -125,6 +157,19 @@ def main() -> int:
     return 0
 
 
+def source_source_problem(args, arxiv_id: str | None, source_status: str, records: list) -> str | None:
+    """Explain why --require-arxiv-source cannot be satisfied, or None when it can."""
+    if args.skip_arxiv_source:
+        return "--skip-arxiv-source contradicts --require-arxiv-source"
+    if not arxiv_id:
+        return "no arXiv id could be detected from the paper argument"
+    if source_status != "ok":
+        return f"arXiv source {source_status}"
+    if not records:
+        return "arXiv source unpacked but contained no figure files"
+    return None
+
+
 def resolve_vault(start: Path) -> Path:
     current = start.resolve()
     candidates = [current, *current.parents]
@@ -139,32 +184,106 @@ def detect_arxiv_id(value: str) -> str | None:
     return match.group("id") if match else None
 
 
-def download_arxiv_source(arxiv_id: str, output_dir: Path) -> bool:
+def download_arxiv_source(
+    arxiv_id: str,
+    output_dir: Path,
+    retries: int = 4,
+    base_wait: float = 5.0,
+) -> str:
+    """Fetch and unpack an arXiv source package. Returns a status string.
+
+    "ok"           source downloaded and unpacked
+    "unavailable"  arXiv has no usable source for this id (404, or a PDF-only submission)
+    "rate_limited" arXiv throttled us and the retries were used up
+    "error"        network failure or a corrupt archive
+
+    The distinction matters. A throttled fetch used to be indistinguishable from
+    "this paper has no source", so the caller silently fell back to embedded-PDF
+    extraction and wrote pageN_figM filenames instead of the original figure names
+    that the reading drafts embed. Callers that need reproducible filenames should
+    pass --require-arxiv-source and treat anything but "ok" as a failure.
+    """
     url = f"https://arxiv.org/e-print/{arxiv_id}"
     archive_path = output_dir / f"{arxiv_id}.tar.gz"
-    LOGGER.info("Downloading arXiv source: %s", url)
+    headers = {"User-Agent": USER_AGENT}
+    attempts = max(1, retries)
+    last = "error"
 
-    try:
-        if requests:
-            response = requests.get(url, timeout=60)
-            if response.status_code != 200 or not response.content:
-                LOGGER.info("arXiv source unavailable: HTTP %s", response.status_code)
-                return False
-            archive_path.write_bytes(response.content)
+    for attempt in range(1, attempts + 1):
+        LOGGER.info("Downloading arXiv source: %s (attempt %s/%s)", url, attempt, attempts)
+        wait = base_wait * (2 ** (attempt - 1))
+        try:
+            payload, status, retry_after = fetch_source_bytes(url, headers)
+        except Exception as exc:
+            LOGGER.info("arXiv source fetch failed: %s", exc)
+            last = "error"
         else:
-            with urllib.request.urlopen(url, timeout=60) as response:  # type: ignore[name-defined]
-                archive_path.write_bytes(response.read())
-
-        with tarfile.open(archive_path, "r:*") as tar:
-            members = list(safe_tar_members(tar, output_dir))
+            if status in RETRY_STATUSES:
+                last = "rate_limited" if status in (403, 429) else "error"
+                if retry_after:
+                    wait = retry_after
+                if attempt >= attempts:
+                    LOGGER.info("arXiv returned HTTP %s, giving up after %s attempt(s)", status, attempt)
+                    return last
+                LOGGER.info("arXiv returned HTTP %s, backing off %.1fs", status, wait)
+                time.sleep(wait)
+                continue
+            if status != 200 or not payload:
+                LOGGER.info("arXiv source unavailable: HTTP %s", status)
+                return "unavailable"
+            if not looks_like_archive(payload):
+                LOGGER.info("arXiv source is not a tar/gzip archive, likely a PDF-only submission")
+                return "unavailable"
+            archive_path.write_bytes(payload)
             try:
-                tar.extractall(output_dir, members=members, filter="data")
-            except TypeError:
-                tar.extractall(output_dir, members=members)
+                with tarfile.open(archive_path, "r:*") as tar:
+                    members = list(safe_tar_members(tar, output_dir))
+                    try:
+                        tar.extractall(output_dir, members=members, filter="data")
+                    except TypeError:
+                        tar.extractall(output_dir, members=members)
+            except Exception as exc:
+                LOGGER.info("Could not unpack arXiv source: %s", exc)
+                return "error"
+            return "ok"
+
+        if attempt >= attempts:
+            break
+        LOGGER.info("Retrying in %.1fs", wait)
+        time.sleep(wait)
+
+    return last
+
+
+def fetch_source_bytes(url: str, headers: dict[str, str]) -> tuple[bytes, int, float | None]:
+    """Return (body, status_code, retry_after_seconds) without raising on HTTP errors."""
+    if requests:
+        response = requests.get(url, headers=headers, timeout=60, allow_redirects=True)
+        return response.content, response.status_code, parse_retry_after(response.headers.get("Retry-After"))
+
+    request = urllib.request.Request(url, headers=headers)  # type: ignore[name-defined]
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:  # type: ignore[name-defined]
+            return response.read(), response.status, parse_retry_after(response.headers.get("Retry-After"))
+    except urllib.error.HTTPError as err:  # type: ignore[name-defined]
+        retry_after = parse_retry_after(err.headers.get("Retry-After")) if err.headers else None
+        return b"", err.code, retry_after
+
+
+def parse_retry_after(value: str | None) -> float | None:
+    if not value:
+        return None
+    try:
+        return max(0.0, float(value))
+    except ValueError:  # HTTP-date form; the exponential backoff is a fine substitute
+        return None
+
+
+def looks_like_archive(payload: bytes) -> bool:
+    """arXiv serves the source as gzip/bzip2/xz/tar. Anything else is not a source package."""
+    if payload[:2] == b"\x1f\x8b" or payload[:3] == b"BZh" or payload[:6] == b"\xfd7zXZ\x00":
         return True
-    except Exception as exc:
-        LOGGER.info("Could not use arXiv source: %s", exc)
-        return False
+    return payload[257:262] == b"ustar"
 
 
 def safe_tar_members(tar: tarfile.TarFile, output_dir: Path) -> Iterable[tarfile.TarInfo]:

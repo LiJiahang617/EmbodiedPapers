@@ -28,19 +28,20 @@ python -c "import fitz, requests; print('ok', fitz.__doc__)"
 
 ## 新设备第一次使用
 
-仓库只同步文本，PDF 和图片按策略留在本地，所以 clone 之后要补一次。
+仓库只同步文本，PDF 和图片按策略留在本地，所以 clone 之后要补一次。`setting/scripts/sync.sh` 把这一整套串起来。
 
 ```bash
 git clone https://github.com/LiJiahang617/EmbodiedPapers.git
 cd EmbodiedPapers
 pip install -r setting/scripts/requirements.txt
 
-python setting/scripts/rehydrate_pdfs.py      # 按各笔记 arxiv / url 重下原文
-python setting/scripts/rehydrate_images.py    # 按 arxiv source 重抽图片
-python setting/scripts/check_paper_map.py     # 校验地图覆盖与 reading 字段
-python setting/scripts/check_git_sync_policy.py
+setting/scripts/sync.sh          # pull + 补 PDF + 补图片 + 跑两个校验
 ```
 
-两个 rehydrate 脚本都靠 `arxiv` 字段工作，没有 arXiv 号的文献覆盖不到，需要按各自 `papers/images/<citekey>/index.md` 里的说明手动补。目前已知的例外是 [[@dyna2026dyna2]]，它是网页技术报告。
+以后换机器或隔一阵回来，同一条命令就够。日常只想核对本地是否完整时用 `setting/scripts/sync.sh --check`，它不联网也不改任何文件，缺东西就以非零码退出，适合当 pre-push 闸门。不想动 git 只想补资产时用 `--no-pull`。
+
+脚本自己找解释器，先认 `$PYTHON`，再试 `python3` 和 `python`，取第一个能 `import fitz, requests` 的。都不行会直接报错并提示装依赖，不会静默产不出东西。
+
+两个 rehydrate 脚本都靠 `arxiv` 字段工作，没有 arXiv 号的文献覆盖不到，需要按各自 `papers/images/<citekey>/index.md` 里的说明手动补。目前已知的例外有三篇网页技术报告，[[@dyna2026dyna2]]、[[@generalist2026gen15]] 和 [[@sunday2026act2preview]]，它们会被稳定报成 SKIP，不算故障。
 
 在仓库根目录打开 Claude Code，不要在外面再套一层目录，否则 `.claude/skills/` 不会被发现。
