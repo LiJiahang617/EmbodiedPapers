@@ -15,6 +15,8 @@ venue:
 openalex: 
 metadata_source: arxiv
 metadata_confidence: high
+reading_mode: full-close-reading
+updated: 2026-10-02
 pdf: "[[papers/pdfs/pan2026vla-corrector-lightweight-detect.pdf]]"
 reading: "[[papers/bilingual/pan2026vla-corrector-lightweight-detect_中英混读.md]]"
 images: "papers/images/pan2026vla-corrector-lightweight-detect/"
@@ -43,8 +45,8 @@ topics:
 - [x] 地图维护:: 已加入 [[论文地图]] 快速索引，`#map/具身智能/VLA/推理期检测纠正与自适应动作时域`
 - [x] 阅读状态:: read
 
-related::
-affiliation::
+related:: [[@yu2026wm-dagger]], [[@xiao2026enpire]], [[@deng2026e2hil]], [[@kang2026x-tokenizer]]
+affiliation:: [[Zhejiang University]], [[Alibaba DAMO Academy]]
 
 ## Abstract
 
@@ -52,22 +54,38 @@ Vision-Language-Action (VLA) foundation models have recently achieved strong pro
 
 ## 一句话定位
 
-不改 VLA 骨干权重、用一个约 40M 外置潜动态校正器，把 action chunking 的“固定盲执行时域”变成“检测到视觉漂移就自动截断并 OGG 引导纠正”的自适应时域，缓解鲁棒性与策略调用频率的静态权衡。
+作者提出 VLA-Corrector，为 action-chunked VLA 增加视觉潜动态检测、事件触发截断和 Online Gradient Guidance（在线梯度引导），在执行发生漂移时提前重规划。骨干在接入纠正模块后保持冻结，外置约 40M 的动力学校正器仍需用示范训练；方法改善的是鲁棒性与每次策略调用的效率，附录同时报告了额外推理耗时。
 
 ## 方法 / 对象
 
-冻结 VLA，抽视觉编码器潜特征训练残差 MLP 校正器 `M_φ`（预测动作引起的短程潜残差 `ΔZ`）。在线用 LVM 比对期望 vs 实际潜演化得不一致分数 `E_t`（Eq 5），经 MAD 鲁棒双阈值 + 持续计数（Eq 6-7,12-13）做事件触发截断（`H_adaptive=h<H`）；截断后仅对下一次重规划施加 OGG（Eq 8-11），把纠正方向 `ΔZ_corr=ΔZ_exp-ΔZ_dev` 注入 flow-matching 速度场。
+- 对象是固定 action horizon（动作执行时域）的生成式 VLA，实验覆盖 π0.5、SmolVLA 和 X-VLA。
+- 先取得已微调的 VLA，再冻结视觉编码器与策略，用示范训练残差 MLP `M_φ`，预测短程潜表示变化 `ΔZ`。
+- Latent-space Vision Monitor（潜空间视觉监视器，LVM）以预测残差与观测残差的 cosine mismatch（余弦不一致）构造 `E_t`，用滑窗 MAD、双阈值和持续计数触发中断。
+- 中断后丢弃当前队列剩余动作，使实际 horizon 从上限 `H` 缩短为 `h<H`；仅下一次策略调用启用 OGG，将候选动作的潜效果引向 `ΔZ_corr=ΔZ_exp−ΔZ_dev`。
+- OGG 对 flow-matching velocity（流匹配速度场）求梯度，不更新骨干权重。全部公式及变量解释见完整精读稿的公式检索表。
 
 ## 证据
 
-MetaWorld 跨 π0.5/SmolVLA/X-VLA 三骨干平均成功率 +15.65/+4.75/+4.05（Table 1）；success-per-call 效率最高 +29.9%/+45.3%/+39.1% 且多设置下调用次数下降（Table 4）；LIBERO few-shot+纠正 97.8% 反超全量微调 96.95%（Table 2）；83.7% 截断落在关键相位（Fig 6）；OGG 恢复率平均 +0.23（Fig 7）；真实 AgileX PiPER 平均 55.6→73.3，扰动组 +28.3（Table 5）。
+| 实验 | 对照及结果 | 解释范围 |
+| --- | --- | --- |
+| MetaWorld 跨骨干，Table 1 | π0.5 48.70%→64.35%，SmolVLA 61.90%→66.65%，X-VLA 55.55%→59.60% | 分别提高 15.65、4.75、4.05 个百分点；收益并非随任务难度严格递增。 |
+| 同 horizon 对照，Table 4 | π0.5 的 `H=50` 为 48.72%/5.15 calls→58.70%/4.98 calls | 成功率提高 9.98 个百分点，success-per-call 相对提高 24.6%；不能把 Table 1 的 64.35% 移到此设置。 |
+| LIBERO，Table 2 | Few-shot π0.5 94.00%→97.80%；Full fine-tuning 为 96.95% | 相对 few-shot 提高 3.80 个百分点，超过全量微调 0.85 个百分点；并非无示范训练。 |
+| 组件，Table 6 | 48.70%→仅截断 60.35%→截断与 OGG 64.35% | 截断贡献 11.65 个百分点，OGG 再增加平均 4.00 个百分点；Hard 子集从 50.0% 降至 47.5%。 |
+| 机理，Figure 6/7 | 83.7% 截断发生于人工标注的关键相位；OGG 平均恢复率增加 0.23 | 前者是事件占比，未按相位时长归一化；后者以中断后 10 步内 `E_t<T_off` 定义恢复。 |
+| AgileX PiPER，Table 5 | 平均 55.6%→73.3%，扰动组 40.0%→68.3% | 分别提高 17.7、28.3 个百分点；9 个任务，每任务每方法 20 次。 |
 
 ## 局限
 
-`E_t` 仅用单一预测间隔 `k`，对缓慢/视觉难辨漂移可能漏检；阈值超参多只报默认值；OGG 受限于冻结骨干先验（救不了骨干表达不了的行为）、单次开销 2.12×；校正器需域匹配示范才最有效（Table 10）。详见精读稿「主张-证据-边界矩阵」。
+检测依赖 RGB 视觉特征与局部残差方向，视觉歧义、力觉缺失及骨干未能表示的恢复动作仍会导致失败。跨域校正器只取得有限改善，域匹配示范仍重要。
+
+success-per-call（成功率除以平均调用次数）不等同于执行速度。附录 Table 11 的比较是同一推理流程关闭与开启 OGG：平均每 episode 推理耗时 2.06→3.38 秒，约 1.64×；标准单次 chunk 推理 278.01 ms，OGG 恢复调用 588.52 ms，约 2.12×，也不等同于整任务完成时间。
+
+主文与附录对数据划分、持续计数和部署训练损失的描述存在差异。完整精读稿保留了这些差异，以及 Figure 1–12、Table 1–15、公式变量和可追问点。
 
 ## 我的阅读笔记
 
+回看时优先对照 Table 4 和 Table 6，区分提前截断与 OGG 的收益，再结合 Table 11–13 判断推理成本。success-per-call 的提高需要与实际耗时分开评价。
 
 ```dataviewjs
 const {Research} = customJS
