@@ -1,5 +1,7 @@
 本目录是用户自己的 Obsidian 研究阅读库。细则见下文。默认只维护功能文件，不新增面向用户的说明文档，除非用户明确要求。
 
+本文件是本库 agent 规则的唯一真源，Codex 原生读它。Claude Code 读根目录 `CLAUDE.md`，那是一份薄指针，只讲环境、skill 位置和新机器起步，规则本身不复述。写作规范随库携带在 `.claude/skills/stop-slop-zh/`。三者都在仓库内，clone 完即可用，无需再向 agent 口头交代规则。
+
 流程草案、访谈记录和临时决策稿默认属于本地过程材料，放在 `local-archive/` 等已忽略目录，不提交到远端；远端只同步 AGENTS、模板、脚本和必要配置。
 
 以后在本目录内处理论文 PDF 或文献阅读稿时，遵守这些约定：
@@ -15,7 +17,7 @@
 - 处理 arXiv 论文图片时，默认先尝试 arXiv source package；source 不可用、无图或解析失败时，再从 PDF 用本地工具回退抽取，保存到 `papers/images/<pdf-stem>/`，并生成 `index.md`。不要默认让 AI 逐图视觉分析，除非用户明确要求。
 - 用户提到使用精读稿或解析流程时，只生成完整中英混读稿 `<stem>_中英混读.md`。不要默认生成“表达与逻辑审查”文件，也不要插入审查标注，除非用户明确要求。
 - 中英混读稿要保留论文结构、公式、表格、图题和关键英文术语，中文解释为主，英文术语以 `English（中文）` 形式保留。
-- 所有新写的中文内容（精读稿、文献笔记正文、`map_brief` / `map_role`）必须过 `stop-slop-zh` skill，装在仓库外层 `../.claude/skills/stop-slop-zh/`，规则见其中的 `references/academic-notes-profile.md`。分层原则是骨架听本文件、中文散文听该 skill：学术场景下小标题、信息型 bullet、原文章节编号不算违规，其余禁用词和禁用标点（中文正文里的冒号、破折号、中文双引号）全部生效；表格、公式、frontmatter、英文原文里的标点是语法，不计命中。交付前跑一遍 L1 扫描，命中不为 0 就返工。2026-08-16 之前写的 30 篇旧稿未经此规则，不要求回改。
+- 所有新写的中文内容（精读稿、文献笔记正文、`map_brief` / `map_role`）必须过 `stop-slop-zh` skill，随库携带在 `.claude/skills/stop-slop-zh/`，规则见其中的 `references/academic-notes-profile.md`，L1 机器质检是 `python setting/scripts/check_zh_style.py <文件>`。分层原则是骨架听本文件、中文散文听该 skill：学术场景下小标题、信息型 bullet、原文章节编号不算违规，其余禁用词和禁用标点（中文正文里的冒号、破折号、中文双引号）全部生效；表格、公式、frontmatter、英文原文里的标点是语法，不计命中。交付前跑一遍 L1 扫描，命中不为 0 就返工。2026-08-16 之前写的 30 篇旧稿未经此规则，不要求回改。
 - 中英混读稿默认写成“完整论文讲解稿”，不是短摘要。除非用户明确要求精简，否则要逐节覆盖论文的主要 section/subsection，解释每节的目的、关键论点、方法机制、假设、证据和与全文主线的关系。
 - 中英混读稿顶部必须包含 `核心词汇速查`、`摘要`、`论文主线` 和 `贡献与结论对照`；正文必须覆盖 `结构地图`、按原文 section 展开的精读、`方法细节`、`实验设置、数据集、基线、指标`、`主要结果、消融或对比`、`图表、公式与表格线索`、`主张-证据-边界矩阵`、`局限与可追问点`、`与当前库的连接`、`精读路线 / 为什么需要回看`。原论文没有的栏目可以用简短说明标记，不要凭空补造。
 - `一句话总结` 可以是一句话，也可以是两句话；必须让读者快速知道作者到底想做什么：是在反驳、证明、构造、提出、测量、解释还是综述什么，以及为什么要做、产出或支持了什么方法/模型/框架/系统/结论。
@@ -31,9 +33,17 @@ Git 同步策略：
 
 - 默认只提交仓库级配置、模板、脚本、校验逻辑和空目录占位。
 - 同步策略只区分「体积」：小体积文本笔记进 Git——文献笔记 `papers/@*.md`、中英混读精读稿 `papers/bilingual/*.md`、`论文地图.md`、`setting/` 配置、`AGENTS.md`；大文件保持本地化不入库——PDF `papers/pdfs/`、图片 `papers/images/`。笔记里指向 PDF/图片的链接在远端仅作占位。规则由 `.gitignore` 落地，并用 `python setting/scripts/check_git_sync_policy.py` 校验（同时扫描 GitHub token 等密钥，防误提交）。
-- 图片不入库意味着全新 clone / 换机器后本地会缺图，精读稿里的图片嵌入会显示为坏链。用 `python setting/scripts/rehydrate_images.py` 按各笔记 `arxiv` 字段从 arXiv source 确定性重抽补齐；抽取沿用 source 原始文件名，能精确复现精读稿引用的图名。`--check` 只报告缺图并以非零码退出（可作换机 / 提交前校验），`--force` / `--clean` 强制重建，无 `arxiv` 字段的论文需手动拷贝图片。
+- 图片不入库意味着全新 clone / 换机器后本地会缺图，精读稿里的图片嵌入会显示为坏链。用 `python setting/scripts/rehydrate_images.py` 按各笔记 `arxiv` 字段从 arXiv source 确定性重抽补齐；抽取沿用 source 原始文件名，能精确复现精读稿引用的图名。`--check` 只报告缺图并以非零码退出（可作换机 / 提交前校验），`--force` / `--clean` 强制重建，无 `arxiv` 字段的论文需手动拷贝图片。rehydrate 一律带 `--require-arxiv-source` 调用抽图脚本：arXiv source 取不到时必须报错退出，不能回落到 PDF 内嵌抽图，因为回落会写出 `pageN_figM` 这类文件名，永远对不上精读稿已经引用的图名，等于把可修复的缺图变成永久坏链。arXiv 会限流，抽图脚本对 403/429/5xx 做指数退避重试，rehydrate 在论文之间默认间隔 3 秒（`--delay`）。
 - 同理，PDF（`papers/pdfs/`）不入库意味着换机器 / 全新 clone 后本地会缺原文，笔记 `pdf::` 链接指向空文件。用 `python setting/scripts/rehydrate_pdfs.py` 按各笔记 `arxiv`（优先）或 `url`（支持 GitHub `/blob/`→raw、arXiv `/abs/`→`/pdf/`、直链 `.pdf`）确定性重下到 `pdf::` 期望的文件名；`--check` 只报缺失并以非零码退出（可作换机 / 提交前校验），`--force` 强制重下，无 `arxiv`/`url` 来源的论文需手动拷贝。
 - `.obsidian/workspace*.json` 属于个人窗口布局和最近文件状态，不提交。
 - `.obsidian/plugins/*/main.js`、`styles.css` 和主题 CSS 属于可重新安装的插件/主题载荷，不提交；Git 只保留插件启用列表、manifest 和 data 配置。
 - 若确实需要同步少量精选笔记，先显式调整 `.gitignore`，不要直接用 `git add -f papers/...` 绕过策略。
 - 提交前可运行 `python setting/scripts/check_git_sync_policy.py`，检查是否误追踪论文内容、大文件或 GitHub token 形态的密钥。
+- `setting/scripts/sync.sh` 把 pull、两个 rehydrate 和两个校验串成一条命令，换机器或隔一阵回来跑它即可；`--check` 是不联网、不改文件的完整性核对，`--no-pull` 只补资产，`--force` 全量重取。它自己挑能 `import fitz, requests` 的解释器，不写死路径。
+
+新设备起步：
+
+- `git clone` 之后先装依赖 `pip install -r setting/scripts/requirements.txt`，再用 `python -c "import fitz, requests"` 验一遍。PyMuPDF 缺失时入库和抽图脚本会静默产不出结果，不报错。
+- 然后跑 `setting/scripts/sync.sh` 一条命令补齐本地 PDF 与图片并自检；它内部依次调 `rehydrate_pdfs.py`、`rehydrate_images.py`、`check_paper_map.py` 和 `check_git_sync_policy.py`，也可以单独跑这四个。
+- 不要把解释器绝对路径写进任何库内文件，各机器位置不同。
+- 用 Claude Code 时在仓库根目录打开，否则 `.claude/skills/` 不会被发现。

@@ -165,7 +165,7 @@ LaST₀ 均值 82%（10 任务中 7 项最佳），比 HybridVLA-7B +8%、π0.5 
 ## 与当前库的连接
 
 - 与本库多篇共享/对比 **π0.5** 基线：[[@pan2026vla-corrector-lightweight-detect|VLA-Corrector]]（π0.5 主骨干）、[[@wang2026vlk-learning-humanoid-loco|VLK]]（π0.5 初始化）、[[@intelligence2025pi06-vla-that-learns|π*0.6]]（π0.5→π0.6）。LaST₀ 代表**另一条改进路线**：不改数据/RL，而在**推理结构**上加"潜时空 CoT"。
-- 与"预测未来"的世界模型/WMA 线（[[@yu2026wm-dagger|WM-DAgger]] 等）相通：LaST₀ 的潜 CoT = **隐式、token 高效的世界模型**，把未来视觉/几何/状态压进潜序列供动作条件化。
+- 与"预测未来"的世界模型/WAM 线（[[@yu2026wm-dagger|WM-DAgger]] 等）相通：LaST₀ 的潜 CoT = **隐式、token 高效的世界模型**，把未来视觉/几何/状态压进潜序列供动作条件化。
 - 与 [[@kang2026x-tokenizer|X-Tokenizer]]（动作表示）互补：一个管"动作 token 化"，一个管"推理 token 化到潜空间"。
 - 双系统"慢推理 + 快动作"与 [[@gao2026fast-leworldmodel|Fast LeWorldModel]] 的快规划思想遥相呼应（快慢分工）。
 - 地图归属：`#map/具身智能/VLA/潜空间时空思维链CoT`（本文新开轴）。

@@ -23,6 +23,14 @@ Usage
   python setting/scripts/rehydrate_images.py --clean     # wipe each target image dir before extracting
   python setting/scripts/rehydrate_images.py --dry-run   # show what would be extracted, do nothing
 
+Extraction runs the extractor with --require-arxiv-source, so a throttled or missing
+arXiv source fails loudly instead of silently falling back to embedded-PDF extraction.
+That fallback renames figures to pageN_figM, which never matches what the drafts embed,
+so it turns a fixable gap into a permanent broken link. Pass --allow-pdf-fallback only
+when you want best-effort images and accept that the draft embeds may stay broken.
+
+arXiv throttles bursts, so papers are fetched with a delay between them (--delay).
+
 Exit code is non-zero if any referenced image is still missing at the end, so it
 doubles as a pre-push / CI check for a machine's local asset completeness.
 """
@@ -34,6 +42,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 IMAGE_REF = re.compile(r"papers/images/[^\]\)\n\"']+?\.(?:png|jpe?g|gif|webp|svg)", re.IGNORECASE)
@@ -47,6 +56,10 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="show what would be extracted; do not run")
     parser.add_argument("--force", action="store_true", help="re-extract even if all images already present")
     parser.add_argument("--clean", action="store_true", help="remove each target image dir before extracting")
+    parser.add_argument("--delay", type=float, default=3.0, help="seconds to wait between papers, to stay under arXiv rate limits (default 3)")
+    parser.add_argument("--retries", type=int, default=4, help="arXiv source download attempts per paper (default 4)")
+    parser.add_argument("--retry-wait", type=float, default=5.0, help="base seconds for exponential backoff between attempts (default 5)")
+    parser.add_argument("--allow-pdf-fallback", action="store_true", help="permit embedded-PDF extraction when the arXiv source is unusable; filenames will not match the draft embeds")
     args = parser.parse_args()
 
     root = repo_root()
@@ -96,7 +109,16 @@ def main() -> int:
 
         if args.clean and out_dir.exists():
             shutil.rmtree(out_dir)
-        ok = run_extractor(info["arxiv"], out_dir, root)
+        if extracted and args.delay > 0:
+            time.sleep(args.delay)  # be polite to arXiv between papers
+        ok = run_extractor(
+            info["arxiv"],
+            out_dir,
+            root,
+            require_source=not args.allow_pdf_fallback,
+            retries=args.retries,
+            retry_wait=args.retry_wait,
+        )
         extracted += 1
         still = [r for r in refs if not (root / r).exists()]
         if ok and not still:
@@ -154,7 +176,9 @@ def parse_note(note: Path, root: Path) -> dict:
 
 
 def front_value(text: str, key: str) -> str | None:
-    m = re.search(rf"^{re.escape(key)}:\s*(.+)$", text, re.MULTILINE)
+    # [^\S\r\n] instead of \s: an empty "arxiv:" must not swallow the newline and
+    # capture the next frontmatter line (that made blank fields look populated).
+    m = re.search(rf"^{re.escape(key)}:[^\S\r\n]*(.+)$", text, re.MULTILINE)
     if not m:
         return None
     return m.group(1).strip().strip('"').strip("'").strip() or None
@@ -188,14 +212,34 @@ def collect_refs(note: Path, info: dict, root: Path) -> list[str]:
     return sorted(refs)
 
 
-def run_extractor(arxiv_id: str, out_dir: Path, root: Path) -> bool:
+def run_extractor(
+    arxiv_id: str,
+    out_dir: Path,
+    root: Path,
+    require_source: bool = True,
+    retries: int = 4,
+    retry_wait: float = 5.0,
+) -> bool:
+    command = [
+        sys.executable,
+        str(EXTRACTOR),
+        arxiv_id,
+        "--output-dir",
+        str(out_dir),
+        "--source-retries",
+        str(retries),
+        "--source-retry-wait",
+        str(retry_wait),
+    ]
+    if require_source:
+        command.append("--require-arxiv-source")
     try:
         proc = subprocess.run(
-            [sys.executable, str(EXTRACTOR), arxiv_id, "--output-dir", str(out_dir)],
+            command,
             cwd=str(root),
             capture_output=True,
             text=True,
-            timeout=300,
+            timeout=300 + retries * retry_wait * 4,
         )
     except subprocess.TimeoutExpired:
         print("        -> extractor timed out")

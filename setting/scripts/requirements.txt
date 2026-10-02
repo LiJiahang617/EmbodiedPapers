@@ -1,0 +1,6 @@
+# setting/scripts/ 下批处理脚本的依赖
+# 安装：pip install -r setting/scripts/requirements.txt
+# 自检：python -c "import fitz, requests; print('ok')"
+
+PyMuPDF>=1.24        # PDF 文本与图片抽取、图形渲染，缺了会静默失败
+requests>=2.31       # arXiv / OpenAlex 查询与 source package 下载

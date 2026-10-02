@@ -160,7 +160,9 @@ def parse_note(note: Path) -> dict:
 
 
 def front_value(text: str, key: str) -> str | None:
-    m = re.search(rf"^{re.escape(key)}:\s*(.+)$", text, re.MULTILINE)
+    # [^\S\r\n] instead of \s: an empty "arxiv:" must not swallow the newline and
+    # capture the next frontmatter line (that made blank fields look populated).
+    m = re.search(rf"^{re.escape(key)}:[^\S\r\n]*(.+)$", text, re.MULTILINE)
     if not m:
         return None
     return m.group(1).strip().strip('"').strip("'").strip() or None
